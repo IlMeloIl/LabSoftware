@@ -1,78 +1,101 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Lista de Fornecedores</title>
-</head>
-<body>
-    <nav style="text-align: right; margin-bottom: 15px;">
-        {% if user.is_authenticated %}
-            Olá, {{ user.username }}! | 
-            <form method="post" action="{% url 'logout' %}" style="display: inline;">
-                {% csrf_token %}
-                <button type="submit" style="background:none; border:none; padding:0; color:blue; text-decoration:underline; cursor:pointer;">
-                    Logout
-                </button>
-            </form>
-        {% else %}
-            <a href="{% url 'login' %}?next={{ request.path }}">Login</a>
-        {% endif %}
-    </nav>
+{% extends "gestao/base.html" %}
 
-    <h1>Lista de Fornecedores</h1>
+{% block title %}Lista de Fornecedores - {{ block.super }}{% endblock title %}
 
-    {% if messages %}
-        <ul class="messages">
-        {% for message in messages %}
-            <li>{{ message }}</li>
-        {% endfor %}
-        </ul>
-    {% endif %}
-
-    {% if user.is_authenticated %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-0">Fornecedores Cadastrados</h2>
         {% if fornecedores %}
-        <table>
-            <thead>
-            <tr>
-                <th>Nome/Razão Social</th>
-                <th>CNPJ</th>
-                <th>Email</th>
-                <th>Telefone</th>
-                <th>Ativo</th>
-                <th>Ações</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for fornecedor in fornecedores %}
-            <tr>
-                <td>{{ fornecedor.nome_razao_social }}</td>
-                <td>{{ fornecedor.cnpj }}</td>
-                <td>{{ fornecedor.email|default:"-" }}</td>
-                <td>{{ fornecedor.telefone|default:"-" }}</td>
-                <td>{% if fornecedor.ativo %}Sim{% else %}Não{% endif %}</td>
-                <td>
-                    <a href="{% url 'gestao:detalhe_fornecedor' fornecedor.id %}">Ver</a>
-                    <a href="{% url 'gestao:editar_fornecedor' fornecedor.id %}">Editar</a>
-                    <a href="{% url 'gestao:excluir_fornecedor' fornecedor.id %}">Excluir</a>
-                    <a href="{% url 'gestao:listar_produtos_por_fornecedor' fornecedor.id %}">Ver Produtos</a>
-                </td>
-            </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <p style="text-align: center;">Nenhum fornecedor cadastrado.</p>
+            <small class="text-muted">Exibindo {{ fornecedores|length }} fornecedor(es)</small>
         {% endif %}
-
-        <p style="text-align: center; margin-top: 20px;">
-            <a href="{% url 'gestao:criar_fornecedor' %}">Adicionar Novo Fornecedor</a> |
-            <a href="{% url 'gestao:listar_produtos' %}">Ver Todos os Produtos</a> |
-            <a href="{% url 'gestao:relatorio_atividades' %}">Relatório de Atividades</a> |
-            <a href="{% url 'admin:index' %}">Ir para o Admin</a>
-        </p>
-    {% else %}
-        <p>Você precisa estar logado para ver a lista de fornecedores e adicionar novos.</p>
-        <p><a href="{% url 'login' %}?next={{ request.path }}">Fazer login</a></p>
+    </div>
+    {% if user.is_authenticated %}
+    <a href="{% url 'gestao:criar_fornecedor' %}" class="btn btn-primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg me-1" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
+        </svg>
+        Adicionar Fornecedor
+    </a>
     {% endif %}
-</body>
-</html>
+</div>
+
+{% if not user.is_authenticated %}
+<div class="alert alert-warning" role="alert">
+    Você precisa estar logado para ver a lista de fornecedores e adicionar novos.
+    <a href="{% url 'login' %}?next={{ request.path }}" class="alert-link">Fazer login</a>.
+</div>
+{% else %}
+    {% if fornecedores %}
+    <div class="card shadow-sm">
+        <div class="card-body p-0"> {# p-0 para a tabela ocupar todo o card #}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover mb-0"> {# mb-0 para remover margem inferior da tabela dentro do card #}
+                    <thead class="table-dark">
+                        <tr>
+                            <th scope="col">Nome/Razão Social</th>
+                            <th scope="col">CNPJ</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Telefone</th>
+                            <th scope="col" class="text-center">Status</th>
+                            <th scope="col" class="text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fornecedor in fornecedores %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'gestao:detalhe_fornecedor' fornecedor.id %}" class="text-decoration-none">
+                                    {{ fornecedor.nome_razao_social }}
+                                </a>
+                                {% if fornecedor.nome_fantasia %}
+                                    <br><small class="text-muted">{{ fornecedor.nome_fantasia }}</small>
+                                {% endif %}
+                            </td>
+                            <td>{{ fornecedor.cnpj_formatado|default:"-" }}</td>
+                            <td>{{ fornecedor.email|default:"-" }}</td>
+                            <td>{{ fornecedor.telefone_formatado|default:"-" }}</td>
+                            <td class="text-center">
+                                {% if fornecedor.ativo %}
+                                    <span class="badge bg-success">Ativo</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inativo</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <a href="{% url 'gestao:detalhe_fornecedor' fornecedor.id %}" class="btn btn-sm btn-outline-info me-1" title="Ver Detalhes">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye" viewBox="0 0 16 16"><path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/><path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/></svg>
+                                </a>
+                                <a href="{% url 'gestao:editar_fornecedor' fornecedor.id %}" class="btn btn-sm btn-outline-warning me-1" title="Editar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16"><path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/><path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/></svg>
+                                </a>
+                                <a href="{% url 'gestao:listar_produtos_por_fornecedor' fornecedor.id %}" class="btn btn-sm btn-outline-secondary me-1" title="Ver Produtos">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-seam" viewBox="0 0 16 16"><path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2l-2.218-.887zm3.564 1.426L5.596 5 8 5.961 14.154 3.5l-2.404-.961zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923l6.5 2.6zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464L7.443.184z"/></svg>
+                                </a>
+                                <a href="{% url 'gestao:excluir_fornecedor' fornecedor.id %}" class="btn btn-sm btn-outline-danger" title="Excluir">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16"><path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 0 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"/></svg>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center" role="alert">
+        Nenhum fornecedor cadastrado ainda.
+        {% if user.is_authenticated %}
+        <a href="{% url 'gestao:criar_fornecedor' %}" class="alert-link">Clique aqui para adicionar o primeiro!</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <hr class="my-4">
+    <div class="text-center">
+        <a href="{% url 'gestao:listar_produtos' %}" class="btn btn-outline-secondary me-2">Ver Todos os Produtos</a>
+        <a href="{% url 'gestao:relatorio_atividades' %}" class="btn btn-outline-secondary">Relatório de Atividades</a>
+    </div>
+{% endif %}
+{% endblock content %}

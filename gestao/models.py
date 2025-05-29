@@ -16,6 +16,21 @@ class Fornecedor(models.Model):
     data_atualizacao = models.DateTimeField(auto_now=True, verbose_name="Data de Atualização")
     ativo = models.BooleanField(default=True, verbose_name="Ativo")
 
+    @property
+    def cnpj_formatado(self):
+        if self.cnpj and len(self.cnpj) == 14:
+            return f"{self.cnpj[:2]}.{self.cnpj[2:5]}.{self.cnpj[5:8]}/{self.cnpj[8:12]}-{self.cnpj[12:]}"
+        return self.cnpj
+
+    @property
+    def telefone_formatado(self):
+        if self.telefone:
+            if len(self.telefone) == 11: # Celular com 9º dígito
+                return f"({self.telefone[:2]}) {self.telefone[2:7]}-{self.telefone[7:]}"
+            elif len(self.telefone) == 10: # Fixo ou celular sem 9º
+                return f"({self.telefone[:2]}) {self.telefone[2:6]}-{self.telefone[6:]}"
+        return self.telefone
+
     def __str__(self):
         return self.nome_razao_social
 

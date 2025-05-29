@@ -1,40 +1,86 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ titulo_pagina|default:"Detalhes do Produto" }}</title>
-</head>
-<body>
-    <div class="container">
-        <h1>{{ titulo_pagina }}</h1>
-        <hr>
+{% extends "gestao/base.html" %}
 
-        {% if produto %}
-        <div class="product-info">
-            <h4>{{ produto.nome }}</h4>
-            {% if produto.codigo_produto %}
-            <p><strong>Código/SKU:</strong> {{ produto.codigo_produto }}</p>
-            {% endif %}
-            <p><strong>Descrição:</strong> {{ produto.descricao|default:"Não informada"|linebreaksbr }}</p>
-            <p><strong>Fornecedor:</strong> <a href="{% url 'gestao:detalhe_fornecedor' produto.fornecedor.id %}">{{ produto.fornecedor.nome_razao_social }}</a></p>
-            <p><strong>Preço de Custo:</strong> R$ {{ produto.preco_custo|default_if_none:"Não informado" }}</p>
-            <p><strong>Preço de Venda:</strong> R$ {{ produto.preco_venda|default_if_none:"Não informado" }}</p>
-            <p><strong>Unidade de Medida:</strong> {{ produto.unidade_medida|default:"Não informada" }}</p>
-            <p><strong>Status:</strong> {% if produto.ativo %}Ativo{% else %}Inativo{% endif %}</p>
-            <p><strong>Data de Cadastro:</strong> {{ produto.data_cadastro|date:"d/m/Y H:i" }}</p>
-            <p><strong>Última Atualização:</strong> {{ produto.data_atualizacao|date:"d/m/Y H:i" }}</p>
-        </div>
-        <hr>
-        <div class="actions">
-            <a href="{% url 'gestao:listar_produtos' %}" class="back">Voltar para Lista</a>
-            <a href="{% url 'gestao:editar_produto' produto.id %}" class="edit">Editar</a>
-            <a href="{% url 'gestao:excluir_produto' produto.id %}" class="delete">Excluir</a>
-        </div>
-        {% else %}
-        <p>Produto não encontrado.</p>
-        <a href="{% url 'gestao:listar_produtos' %}" class="back">Voltar para Lista</a>
-        {% endif %}
+{% block title %}
+    {% if produto %}
+        Detalhes de {{ produto.nome }}
+    {% else %}
+        Produto não encontrado
+    {% endif %}
+    - {{ block.super }}
+{% endblock title %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">{{ titulo_pagina|default:"Detalhes do Produto" }}</h2>
+        <a href="{% url 'gestao:listar_produtos' %}" class="btn btn-outline-secondary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-short me-1" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5"/>
+            </svg>
+            Voltar para Lista
+        </a>
     </div>
-</body>
-</html>
+
+    {% if produto %}
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h4 class="mb-0">{{ produto.nome }}</h4>
+            {% if produto.codigo_produto %}
+            <small class="text-muted">Código/SKU: {{ produto.codigo_produto }}</small>
+            {% endif %}
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-7">
+                    <p><strong>Descrição:</strong></p>
+                    <div class="p-2 bg-light border rounded mb-3">
+                        {{ produto.descricao|default:"Não informada"|linebreaksbr }}
+                    </div>
+                    <p class="mb-1"><strong>Fornecedor:</strong> <a href="{% url 'gestao:detalhe_fornecedor' produto.fornecedor.id %}">{{ produto.fornecedor.nome_razao_social }}</a></p>
+                </div>
+                <div class="col-md-5">
+                    <p class="mb-1"><strong>Preço de Custo:</strong> R$ {{ produto.preco_custo|floatformat:2|default_if_none:"Não informado" }}</p>
+                    <p class="mb-1"><strong>Preço de Venda:</strong> R$ {{ produto.preco_venda|floatformat:2|default_if_none:"Não informado" }}</p>
+                    <p class="mb-1"><strong>Unidade de Medida:</strong> {{ produto.unidade_medida|default:"Não informada" }}</p>
+                    <p class="mb-1"><strong>Status:</strong> 
+                        {% if produto.ativo %}
+                            <span class="badge bg-success">Ativo</span>
+                        {% else %}
+                            <span class="badge bg-danger">Inativo</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-1"><small class="text-muted">Data de Cadastro: {{ produto.data_cadastro|date:"d/m/Y H:i" }}</small></p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                     <p class="mb-1"><small class="text-muted">Última Atualização: {{ produto.data_atualizacao|date:"d/m/Y H:i" }}</small></p>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer bg-light text-end">
+            <a href="{% url 'gestao:editar_produto' produto.id %}" class="btn btn-warning me-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square me-1" viewBox="0 0 16 16"><path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/><path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/></svg>
+                Editar
+            </a>
+            <a href="{% url 'gestao:excluir_produto' produto.id %}" class="btn btn-danger">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3-fill me-1" viewBox="0 0 16 16">
+                    <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5"/>
+                </svg>
+                Excluir
+            </a>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-warning text-center" role="alert">
+        Produto não encontrado.
+    </div>
+    <div class="text-center">
+        <a href="{% url 'gestao:listar_produtos' %}" class="btn btn-primary">Voltar para Lista de Produtos</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock content %}

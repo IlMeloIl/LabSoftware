@@ -22,45 +22,45 @@ class FornecedorForm(forms.ModelForm):
         
         widgets = {
             'nome_razao_social': forms.TextInput(attrs={
-                'placeholder': 'Ex: Empresa Exemplo LTDA',
-                'class': 'form-input-text' 
+                'class': 'form-control',
+                'placeholder': 'Ex: Empresa Exemplo LTDA'
             }),
             'cnpj': forms.TextInput(attrs={
-                'placeholder': '00.000.000/0000-00',
-                'class': 'form-input-text'
+                'class': 'form-control',
+                'placeholder': '00.000.000/0000-00'
             }),
             'nome_fantasia': forms.TextInput(attrs={
-                'placeholder': 'Ex: Nome Popular da Empresa (Opcional)',
-                'class': 'form-input-text'
+                'class': 'form-control',
+                'placeholder': 'Ex: Nome Popular da Empresa (Opcional)'
             }),
-            'email': forms.EmailInput(attrs={ 
-                'placeholder': 'contato@empresa.com (Opcional)',
-                'class': 'form-input-email'
+            'email': forms.EmailInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'contato@empresa.com (Opcional)'
             }),
             'telefone': forms.TextInput(attrs={
-                'placeholder': '(00) 00000-0000 ou (00) 0000-0000 (Opcional)',
-                'class': 'form-input-text'
+                'class': 'form-control',
+                'placeholder': '(00) 0000-0000 ou (00) 00000-0000 (Opcional)'
             }),
             'endereco': forms.TextInput(attrs={
-                'placeholder': 'Ex: Rua Exemplo, 123, Bairro (Opcional)',
-                'class': 'form-input-text'
+                'class': 'form-control',
+                'placeholder': 'Ex: Rua Exemplo, 123, Bairro (Opcional)'
             }),
             'cidade': forms.TextInput(attrs={
-                'placeholder': 'Ex: São Paulo (Opcional)',
-                'class': 'form-input-text'
+                'class': 'form-control',
+                'placeholder': 'Ex: São Paulo (Opcional)'
             }),
             'estado': forms.TextInput(attrs={
+                'class': 'form-control',
                 'placeholder': 'Ex: SP (Opcional, 2 letras)',
-                'class': 'form-input-text',
-                'maxlength': '2' 
+                'maxlength': '2'
             }),
             'cep': forms.TextInput(attrs={
-                'placeholder': '00000-000 (Opcional)',
-                'class': 'form-input-text'
+                'class': 'form-control',
+                'placeholder': '00000-000 (Opcional)'
             }),
             'ativo': forms.CheckboxInput(attrs={
-                'class': 'form-input-checkbox'
-            }), 
+                'class': 'form-check-input'
+            }),
         }
 
         
@@ -180,14 +180,14 @@ class ProdutoForm(forms.ModelForm):
             'ativo',
         ]
         widgets = {
-            'nome': forms.TextInput(attrs={'placeholder': 'Ex: Parafuso Sextavado 1/4"', 'class': 'form-input-text'}),
-            'descricao': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Detalhes adicionais sobre o produto (opcional)', 'class': 'form-input-textarea'}),
-            'codigo_produto': forms.TextInput(attrs={'placeholder': 'Ex: SKU12345 (Opcional, deve ser único)', 'class': 'form-input-text'}),
-            'preco_custo': forms.NumberInput(attrs={'placeholder': '0.00', 'class': 'form-input-number'}),
-            'preco_venda': forms.NumberInput(attrs={'placeholder': '0.00', 'class': 'form-input-number'}),
-            'unidade_medida': forms.TextInput(attrs={'placeholder': 'Ex: UN, KG, PC, CX (Opcional)', 'class': 'form-input-text'}),
-            'fornecedor': forms.Select(attrs={'class': 'form-input-select'}),
-            'ativo': forms.CheckboxInput(attrs={'class': 'form-input-checkbox'}),
+            'nome': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Parafuso Sextavado 1/4"'}),
+            'descricao': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Detalhes adicionais sobre o produto (opcional)'}),
+            'codigo_produto': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: SKU12345 (Opcional, deve ser único)'}),
+            'fornecedor': forms.Select(attrs={'class': 'form-select'}),
+            'preco_custo': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0.00', 'step': '0.01'}),
+            'preco_venda': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0.00', 'step': '0.01'}),
+            'unidade_medida': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: UN, KG, PC, CX (Opcional)'}),
+            'ativo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
         labels = {
             'nome': 'Nome do Produto',
@@ -244,7 +244,6 @@ class ProdutoForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self.fields['fornecedor'].queryset = Fornecedor.objects.filter(ativo=True).order_by('nome_razao_social')
-        # self.fields['fornecedor'].empty_label = "Selecione um Fornecedor"
 
         if fornecedor_obj_fixo:
             self.fields['fornecedor'].initial = fornecedor_obj_fixo

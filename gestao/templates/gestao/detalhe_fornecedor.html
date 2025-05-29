@@ -1,49 +1,89 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ titulo_pagina|default:"Detalhes do Fornecedor" }}</title>    
-</head>
-<body>
-    <div>
-        <h1>{{ titulo_pagina }}</h1>
-        <hr>
+{% extends "gestao/base.html" %}
 
-        {% if fornecedor %}
-        <div>
-            <div>
-                Informações do Fornecedor
+{% block title %}
+    {% if fornecedor %}
+        Detalhes de {{ fornecedor.nome_razao_social }}
+    {% else %}
+        Fornecedor não encontrado
+    {% endif %}
+    - {{ block.super }}
+{% endblock title %}
+
+{% block content %}
+<div class="container py-4">
+    {% if fornecedor %}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">{{ titulo_pagina|default:"Detalhes do Fornecedor" }}</h2>
+        <a href="{% url 'gestao:listar_fornecedores' %}" class="btn btn-outline-secondary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-short me-1" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5"/>
+            </svg>
+            Voltar para Lista
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h4 class="mb-0">{{ fornecedor.nome_razao_social }}</h4>
+            {% if fornecedor.nome_fantasia %}
+            <h6 class="mb-0 text-muted">{{ fornecedor.nome_fantasia }}</h6>
+            {% endif %}
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <p class="mb-1"><strong>CNPJ:</strong> {{ fornecedor.cnpj_formatado }}</p>
+                    <p class="mb-1"><strong>E-mail:</strong> {{ fornecedor.email|default:"Não informado" }}</p>
+                    <p class="mb-1"><strong>Telefone:</strong> {{ fornecedor.telefone_formatado|default:"Não informado" }}</p>
+                    <p class="mb-1"><strong>Status:</strong> 
+                        {% if fornecedor.ativo %}
+                            <span class="badge bg-success">Ativo</span>
+                        {% else %}
+                            <span class="badge bg-danger">Inativo</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <p class="mb-1"><strong>Endereço:</strong> {{ fornecedor.endereco|default:"Não informado" }}</p>
+                    <p class="mb-1"><strong>Cidade:</strong> {{ fornecedor.cidade|default:"Não informada" }}</p>
+                    <p class="mb-1"><strong>UF:</strong> {{ fornecedor.estado|default:"Não informada" }}</p>
+                    <p class="mb-1"><strong>CEP:</strong> {{ fornecedor.cep_formatado|default:"Não informado" }}</p>
+                </div>
             </div>
-            <div>
-                <h5>{{ fornecedor.nome_razao_social }}</h5>
-                {% if fornecedor.nome_fantasia %}
-                    <h6>{{ fornecedor.nome_fantasia }}</h6>
-                {% endif %}
-                <hr>
-                <p><strong>CNPJ:</strong> {{ fornecedor.cnpj }}</p>
-                <p><strong>E-mail:</strong> {{ fornecedor.email|default:"Não informado" }}</p>
-                <p><strong>Telefone:</strong> {{ fornecedor.telefone|default:"Não informado" }}</p>
-                <p><strong>Endereço:</strong> {{ fornecedor.endereco|default:"Não informado" }}</p>
-                <p><strong>Cidade:</strong> {{ fornecedor.cidade|default:"Não informada" }}</p>
-                <p><strong>UF:</strong> {{ fornecedor.estado|default:"Não informada" }}</p>
-                <p><strong>CEP:</strong> {{ fornecedor.cep|default:"Não informado" }}</p>
-                <p><strong>Status:</strong> {% if fornecedor.ativo %}Ativo{% else %}Inativo{% endif %}</p>
-                <p><strong>Data de Cadastro:</strong> {{ fornecedor.data_cadastro|date:"d/m/Y H:i" }}</p>
-                <p><strong>Última Atualização:</strong> {{ fornecedor.data_atualizacao|date:"d/m/Y H:i" }}</p>
-            </div>
-            <div>
-                <a href="{% url 'gestao:listar_fornecedores' %}">Voltar para Lista</a>
-                <a href="{% url 'gestao:editar_fornecedor' fornecedor.id %}">Editar</a>
-                <a href="{% url 'gestao:excluir_fornecedor' fornecedor.id %}">Excluir</a>    
+            <hr>
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-1"><small class="text-muted">Data de Cadastro: {{ fornecedor.data_cadastro|date:"d/m/Y H:i" }}</small></p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                     <p class="mb-1"><small class="text-muted">Última Atualização: {{ fornecedor.data_atualizacao|date:"d/m/Y H:i" }}</small></p>
+                </div>
             </div>
         </div>
-        {% else %}
-            <div>
-                Fornecedor não encontrado.
-            </div>
-            <a href="{% url 'gestao:listar_fornecedores' %}">Voltar para Lista</a>
-        {% endif %}
+        <div class="card-footer bg-light text-end">
+            <a href="{% url 'gestao:listar_produtos_por_fornecedor' fornecedor.id %}" class="btn btn-info me-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-seam me-1" viewBox="0 0 16 16"><path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2l-2.218-.887zm3.564 1.426L5.596 5 8 5.961 14.154 3.5l-2.404-.961zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923l6.5 2.6zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464L7.443.184z"/></svg>
+                Ver Produtos
+            </a>
+            <a href="{% url 'gestao:editar_fornecedor' fornecedor.id %}" class="btn btn-warning me-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square me-1" viewBox="0 0 16 16"><path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/><path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/></svg>
+                Editar
+            </a>
+            <a href="{% url 'gestao:excluir_fornecedor' fornecedor.id %}" class="btn btn-danger">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3-fill me-1" viewBox="0 0 16 16">
+                    <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5"/>
+                </svg>
+                Excluir
+            </a>    
+        </div>
     </div>
-</body>
-</html>
+    {% else %}
+    <div class="alert alert-warning text-center" role="alert">
+        Fornecedor não encontrado.
+    </div>
+    <div class="text-center">
+        <a href="{% url 'gestao:listar_fornecedores' %}" class="btn btn-primary">Voltar para Lista de Fornecedores</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock content %}

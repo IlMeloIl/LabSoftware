@@ -1,84 +1,121 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ titulo_pagina|default:"Relatório de Atividades" }}</title>
-</head>
-<body>
-    <div class="container">
-        <h1>{{ titulo_pagina }}</h1>
+{% extends "gestao/base.html" %}
 
-        {% if messages %}
-        <ul class="messages">
-            {% for message in messages %}
-            <li class="{{ message.tags }}">{{ message }}</li>
-            {% endfor %}
-        </ul>
-        {% endif %}
+{% block title %}{{ titulo_pagina|default:"Relatório de Atividades" }} - {{ block.super }}{% endblock title %}
 
-        <form method="GET" action="{% url 'gestao:relatorio_atividades' %}">
-            <div>
-                <label for="id_data_inicio">Data Início:</label>
-                <input type="date" name="data_inicio" id="id_data_inicio" value="{{ filtros_aplicados.data_inicio|default:'' }}">
-            </div>
-            <div>
-                <label for="id_data_fim">Data Fim:</label>
-                <input type="date" name="data_fim" id="id_data_fim" value="{{ filtros_aplicados.data_fim|default:'' }}">
-            </div>
-            <div>
-                <label for="id_fornecedor">Fornecedor (busca):</label>
-                <input type="text" name="fornecedor" id="id_fornecedor" placeholder="Nome ou CNPJ do fornecedor" value="{{ filtros_aplicados.fornecedor|default:'' }}">
-            </div>
-            <div>
-                <label for="id_tipo_acao">Tipo de Ação:</label>
-                <select name="tipo_acao" id="id_tipo_acao">
-                    <option value="">Todas</option>
-                    {% for valor, texto in tipos_acao %}
-                    <option value="{{ valor }}" {% if filtros_aplicados.tipo_acao == valor %}selected{% endif %}>{{ texto }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div>
-                <button type="submit">Filtrar</button>
-                <button type="submit" name="export" value="csv" class="export">Exportar para CSV</button>
-                <a href="{% url 'gestao:relatorio_atividades' %}" style="margin-left: 10px;">Limpar Filtros</a>
-            </div>
-        </form>
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4 text-center">{{ titulo_pagina|default:"Relatório de Atividades" }}</h1>
 
-        {% if atividades %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Timestamp</th>
-                    <th>Usuário</th>
-                    <th>Ação</th>
-                    <th>Descrição</th>
-                    <th>Detalhes Adicionais</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for atividade in atividades %}
-                <tr>
-                    <td>{{ atividade.timestamp|date:"d/m/Y H:i:s" }}</td>
-                    <td>{{ atividade.usuario.username|default:"Sistema" }}</td>
-                    <td>{{ atividade.get_acao_display }}</td>
-                    <td>{{ atividade.descricao }}</td>
-                    <td>{{ atividade.detalhes_adicionais|default:"" }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <p class="no-results">Nenhuma atividade encontrada para os filtros aplicados.</p>
-        {% endif %}
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags %}{% if message.tags == 'error' %}alert-danger{% elif message.tags == 'success' %}alert-success{% else %}alert-{{ message.tags }}{% endif %}{% else %}alert-info{% endif %} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
 
-        <div class="nav-links">
-            <a href="{% url 'gestao:listar_fornecedores' %}">Voltar para Lista de Fornecedores</a>
-            {% if user.is_staff %}
-            | <a href="{% url 'admin:index' %}">Admin</a>
-            {% endif %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-3">Filtrar Atividades</h5>
+            <form method="GET" action="{% url 'gestao:relatorio_atividades' %}">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-6 col-lg-3">
+                        <label for="id_data_inicio" class="form-label">Data Início:</label>
+                        <input type="date" name="data_inicio" id="id_data_inicio" value="{{ filtros_aplicados.data_inicio|default:'' }}" class="form-control">
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <label for="id_data_fim" class="form-label">Data Fim:</label>
+                        <input type="date" name="data_fim" id="id_data_fim" value="{{ filtros_aplicados.data_fim|default:'' }}" class="form-control">
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <label for="id_fornecedor" class="form-label">Fornecedor:</label>
+                        <input type="text" name="fornecedor" id="id_fornecedor" placeholder="Nome ou CNPJ" value="{{ filtros_aplicados.fornecedor|default:'' }}" class="form-control">
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <label for="id_tipo_acao" class="form-label">Tipo de Ação:</label>
+                        <select name="tipo_acao" id="id_tipo_acao" class="form-select">
+                            <option value="">Todas</option>
+                            {% for valor, texto in tipos_acao %}
+                            <option value="{{ valor }}" {% if filtros_aplicados.tipo_acao == valor %}selected{% endif %}>{{ texto }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12 d-flex justify-content-start pt-2">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-funnel-fill me-1" viewBox="0 0 16 16">
+                                <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5z"/>
+                            </svg>
+                            Filtrar
+                        </button>
+                        <button type="submit" name="export" value="csv" class="btn btn-success me-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-spreadsheet-fill me-1" viewBox="0 0 16 16">
+                                <path d="M6 12v-2h3v2H6z"/>
+                                <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M3 9h10v1h-3v2h3v1h-3v2H3v-2h3v-1H3V9z"/>
+                            </svg>
+                            Exportar CSV
+                        </button>
+                        <a href="{% url 'gestao:relatorio_atividades' %}" class="btn btn-outline-secondary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eraser-fill me-1" viewBox="0 0 16 16">
+                                <path d="M8.086 2.207a2 2 0 0 1 2.828 0l3.879 3.879a2 2 0 0 1 0 2.828l-5.5 5.5A2 2 0 0 1 7.879 15H5.12a2 2 0 0 1-1.414-.586l-2.5-2.5a2 2 0 0 1 0-2.828l6.879-6.879zm.66 11.34L3.453 8.254 1.914 9.793a1 1 0 0 0 0 1.414l2.5 2.5a1 1 0 0 0 .707.293H7.88a1 1 0 0 0 .707-.293l.16-.16z"/>
+                            </svg>
+                            Limpar Filtros
+                        </a>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
-</body>
-</html>
+
+    {% if atividades %}
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h5 class="mb-0">Resultados</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col">Timestamp</th>
+                        <th scope="col">Usuário</th>
+                        <th scope="col">Ação</th>
+                        <th scope="col">Descrição</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for atividade in atividades %}
+                    <tr>
+                        <td>{{ atividade.timestamp|date:"d/m/Y H:i:s" }}</td>
+                        <td>{{ atividade.usuario.username|default:"Sistema" }}</td>
+                        <td>{{ atividade.get_acao_display }}</td>
+                        <td>{{ atividade.descricao }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center mt-4" role="alert">
+        Nenhuma atividade encontrada para os filtros aplicados.
+    </div>
+    {% endif %}
+
+    <div class="mt-4 text-center">
+        <a href="{% url 'gestao:listar_fornecedores' %}" class="btn btn-outline-secondary me-2">
+             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-circle-fill me-1" viewBox="0 0 16 16">
+                <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0m3.5 7.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5z"/>
+            </svg>
+            Voltar para Fornecedores
+        </a>
+        {% if user.is_staff %}
+        <a href="{% url 'admin:index' %}" class="btn btn-outline-dark" target="_blank">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-badge-fill me-1" viewBox="0 0 16 16">
+                <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2zm4.5 0a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zM8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6m5 2.755C12.146 12.825 10.623 12 8 12s-4.146.826-5 1.755V14a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1z"/>
+            </svg>
+            Admin Django
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock content %}
