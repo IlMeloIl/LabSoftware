@@ -9,16 +9,32 @@ class FornecedorAdmin(admin.ModelAdmin):
     readonly_fields = ('data_cadastro', 'data_atualizacao')
 
 class ProdutoAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'fornecedor', 'codigo_produto', 'preco_venda', 'ativo')
-    search_fields = ('nome', 'codigo_produto', 'fornecedor__nome_razao_social')
-    list_filter = ('ativo', 'fornecedor')
-    autocomplete_fields = ['fornecedor'] # Melhora a seleção de fornecedor se houver muitos
+    list_display = ('nome', 'fornecedor', 'codigo_produto', 'preco_venda', 'unidade_medida', 'ativo', 'data_atualizacao')
+    search_fields = ('nome', 'codigo_produto', 'fornecedor__nome_razao_social', 'fornecedor__nome_fantasia')
+    list_filter = ('ativo', 'fornecedor', 'data_cadastro')
+    autocomplete_fields = ['fornecedor']
+    readonly_fields = ('data_cadastro', 'data_atualizacao')
+    fieldsets = (
+        (None, {
+            'fields': ('nome', 'codigo_produto', 'descricao', 'ativo')
+        }),
+        ('Associação', {
+            'fields': ('fornecedor',)
+        }),
+        ('Valores e Medidas', {
+            'fields': ('preco_custo', 'preco_venda', 'unidade_medida')
+        }),
+        ('Datas de Controle', {
+            'fields': ('data_cadastro', 'data_atualizacao'),
+            'classes': ('collapse',),
+        }),
+    )
 
 class AtividadeSistemaAdmin(admin.ModelAdmin):
     list_display = ('timestamp', 'usuario_display', 'get_acao_display', 'descricao_curta')
     list_filter = ('acao', 'timestamp', 'usuario')
     search_fields = ('usuario__username', 'descricao')
-    readonly_fields = ('timestamp', 'usuario', 'acao', 'descricao', 'detalhes_adicionais') # Geralmente logs não são editáveis
+    readonly_fields = ('timestamp', 'usuario', 'acao', 'descricao', 'detalhes_adicionais')
 
     def usuario_display(self, obj):
         return obj.usuario.username if obj.usuario else "Sistema"

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ titulo_pagina|default:"Lista de Produtos" }}</title>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ titulo_pagina }}</h1>
+
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        <p style="text-align: center; margin-bottom: 20px;">
+            <a href="{% url 'gestao:criar_produto' %}" class="add-button">Adicionar Novo Produto</a>
+        </p>
+
+        {% if produtos %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome do Produto</th>
+                    <th>Fornecedor</th>
+                    <th>Código/SKU</th>
+                    <th>Preço Venda</th>
+                    <th>Ativo</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for produto in produtos %}
+                <tr>
+                    <td>{{ produto.nome }}</td>
+                    <td>{{ produto.fornecedor.nome_fantasia|default:produto.fornecedor.nome_razao_social }}</td>
+                    <td>{{ produto.codigo_produto|default:"-" }}</td>
+                    <td>R$ {{ produto.preco_venda|default_if_none:"-" }}</td>
+                    <td>{% if produto.ativo %}Sim{% else %}Não{% endif %}</td>
+                    <td class="actions">
+                        <a href="{% url 'gestao:detalhe_produto' produto.id %}">Ver</a>
+                        <a href="{% url 'gestao:editar_produto' produto.id %}">Editar</a>
+                        <a href="{% url 'gestao:excluir_produto' produto.id %}">Excluir</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="text-align: center;">Nenhum produto cadastrado.</p>
+        {% endif %}
+
+        <p style="text-align: center; margin-top: 20px;">
+            <a href="{% url 'gestao:listar_fornecedores' %}">Ver Fornecedores</a> |
+            <a href="{% url 'admin:index' %}">Ir para o Admin</a>
+        </p>
+    </div>
+</body>
+</html>

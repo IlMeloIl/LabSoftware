@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ titulo_pagina|default:"Confirmar Exclusão" }}</title>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ titulo_pagina }}</h1>
+        <hr>
+
+        {% if produto %}
+        <p>Você tem certeza que deseja excluir o produto abaixo?</p>
+        
+        <div>
+            <strong>Nome:</strong> {{ produto.nome }}<br>
+            {% if produto.codigo_produto %}
+            <strong>Código/SKU:</strong> {{ produto.codigo_produto }}<br>
+            {% endif %}
+            <strong>Fornecedor:</strong> {{ produto.fornecedor.nome_razao_social }}<br>
+        </div>
+        
+        <p><strong>Atenção:</strong> Esta ação não pode ser desfeita.</p>
+        
+        <form method="post" action="{% url 'gestao:excluir_produto' produto.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Sim, Excluir</button>
+            <a href="{% url 'gestao:detalhe_produto' produto.id %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+        {% else %}
+        <p>Produto não encontrado ou já excluído.</p>
+        <a href="{% url 'gestao:listar_produtos' %}" class="btn btn-secondary">Voltar para Lista</a>
+        {% endif %}
+    </div>
+</body>
+</html>

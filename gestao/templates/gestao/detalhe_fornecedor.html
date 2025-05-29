@@ -3,21 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ titulo_pagina|default:"Detalhes do Fornecedor" }}</title>
-    <!-- Você pode adicionar links para seus arquivos CSS aqui, se desejar -->
-    
+    <title>{{ titulo_pagina|default:"Detalhes do Fornecedor" }}</title>    
 </head>
 <body>
-    <div> <!-- Um container geral -->
+    <div>
         <h1>{{ titulo_pagina }}</h1>
         <hr>
 
         {% if fornecedor %}
-        <div> <!-- Card ou seção de detalhes -->
-            <div> <!-- Cabeçalho do card/seção -->
+        <div>
+            <div>
                 Informações do Fornecedor
             </div>
-            <div> <!-- Corpo do card/seção -->
+            <div>
                 <h5>{{ fornecedor.nome_razao_social }}</h5>
                 {% if fornecedor.nome_fantasia %}
                     <h6>{{ fornecedor.nome_fantasia }}</h6>
@@ -34,16 +32,14 @@
                 <p><strong>Data de Cadastro:</strong> {{ fornecedor.data_cadastro|date:"d/m/Y H:i" }}</p>
                 <p><strong>Última Atualização:</strong> {{ fornecedor.data_atualizacao|date:"d/m/Y H:i" }}</p>
             </div>
-            <div> <!-- Rodapé do card/seção -->
+            <div>
                 <a href="{% url 'gestao:listar_fornecedores' %}">Voltar para Lista</a>
                 <a href="{% url 'gestao:editar_fornecedor' fornecedor.id %}">Editar</a>
-                <a href="{% url 'gestao:excluir_fornecedor' fornecedor.id %}">Excluir</a>
-                <!-- Futuros links para Excluir -->
-                
+                <a href="{% url 'gestao:excluir_fornecedor' fornecedor.id %}">Excluir</a>    
             </div>
         </div>
         {% else %}
-            <div> <!-- Alerta -->
+            <div>
                 Fornecedor não encontrado.
             </div>
             <a href="{% url 'gestao:listar_fornecedores' %}">Voltar para Lista</a>

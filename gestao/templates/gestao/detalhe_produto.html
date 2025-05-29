@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ titulo_pagina|default:"Detalhes do Produto" }}</title>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ titulo_pagina }}</h1>
+        <hr>
+
+        {% if produto %}
+        <div class="product-info">
+            <h4>{{ produto.nome }}</h4>
+            {% if produto.codigo_produto %}
+            <p><strong>Código/SKU:</strong> {{ produto.codigo_produto }}</p>
+            {% endif %}
+            <p><strong>Descrição:</strong> {{ produto.descricao|default:"Não informada"|linebreaksbr }}</p>
+            <p><strong>Fornecedor:</strong> <a href="{% url 'gestao:detalhe_fornecedor' produto.fornecedor.id %}">{{ produto.fornecedor.nome_razao_social }}</a></p>
+            <p><strong>Preço de Custo:</strong> R$ {{ produto.preco_custo|default_if_none:"Não informado" }}</p>
+            <p><strong>Preço de Venda:</strong> R$ {{ produto.preco_venda|default_if_none:"Não informado" }}</p>
+            <p><strong>Unidade de Medida:</strong> {{ produto.unidade_medida|default:"Não informada" }}</p>
+            <p><strong>Status:</strong> {% if produto.ativo %}Ativo{% else %}Inativo{% endif %}</p>
+            <p><strong>Data de Cadastro:</strong> {{ produto.data_cadastro|date:"d/m/Y H:i" }}</p>
+            <p><strong>Última Atualização:</strong> {{ produto.data_atualizacao|date:"d/m/Y H:i" }}</p>
+        </div>
+        <hr>
+        <div class="actions">
+            <a href="{% url 'gestao:listar_produtos' %}" class="back">Voltar para Lista</a>
+            <a href="{% url 'gestao:editar_produto' produto.id %}" class="edit">Editar</a>
+            <a href="{% url 'gestao:excluir_produto' produto.id %}" class="delete">Excluir</a>
+        </div>
+        {% else %}
+        <p>Produto não encontrado.</p>
+        <a href="{% url 'gestao:listar_produtos' %}" class="back">Voltar para Lista</a>
+        {% endif %}
+    </div>
+</body>
+</html>
