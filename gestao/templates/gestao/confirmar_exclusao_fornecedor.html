@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ titulo_pagina|default:"Confirmar Exclusão" }}</title>
+</head>
+<body>
+    <div> <!-- Container -->
+        <h1>{{ titulo_pagina }}</h1>
+        <hr>
+
+        {% if fornecedor %}
+            <p>Você tem certeza que deseja excluir o fornecedor abaixo?</p>
+            
+            <div>
+                <strong>Nome/Razão Social:</strong> {{ fornecedor.nome_razao_social }}<br>
+                <strong>CNPJ:</strong> {{ fornecedor.cnpj }}<br>
+                {% if fornecedor.nome_fantasia %}
+                    <strong>Nome Fantasia:</strong> {{ fornecedor.nome_fantasia }}<br>
+                {% endif %}
+            </div>
+            
+            <p><strong>Atenção:</strong> Esta ação não pode ser desfeita.</p>
+            
+            <form method="post" action="{% url 'gestao:excluir_fornecedor' fornecedor.id %}">
+                {% csrf_token %}
+                <button type="submit">Sim, Excluir</button>
+                <a href="{% url 'gestao:listar_fornecedores' %}">Cancelar</a>
+            </form>
+        {% else %}
+            <p>Fornecedor não encontrado ou já excluído.</p>
+            <a href="{% url 'gestao:listar_fornecedores' %}">Voltar para Lista</a>
+        {% endif %}
+    </div>
+</body>
+</html>

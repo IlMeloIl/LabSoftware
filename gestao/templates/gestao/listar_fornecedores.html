@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Fornecedores</title>
+    <style>
+        table {
+            width: 80%;
+            border-collapse: collapse;
+            margin: 20px auto;
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        h1 {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Lista de Fornecedores</h1>
+
+    {% if fornecedores %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome/Razão Social</th>
+                    <th>CNPJ</th>
+                    <th>Email</th>
+                    <th>Telefone</th>
+                    <th>Ativo</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for fornecedor in fornecedores %}
+                    <tr>
+                        <td>{{ fornecedor.nome_razao_social }}</td>
+                        <td>{{ fornecedor.cnpj }}</td>
+                        <td>{{ fornecedor.email|default:"-" }}</td>
+                        <td>{{ fornecedor.telefone|default:"-" }}</td>
+                        <td>{% if fornecedor.ativo %}Sim{% else %}Não{% endif %}</td>
+                        <td>
+                            <a href="{% url 'gestao:detalhe_fornecedor' fornecedor.id %}">Ver</a>
+                            <a href="{% url 'gestao:editar_fornecedor' fornecedor.id %}">Editar</a>
+                            <a href="{% url 'gestao:excluir_fornecedor' fornecedor.id %}">Excluir</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p style="text-align: center;">Nenhum fornecedor cadastrado.</p>
+    {% endif %}
+
+    <p style="text-align: center;">
+        <a href="{% url 'gestao:criar_fornecedor' %}" style="padding: 10px 15px; background-color: #28a745; color: white; text-decoration: none; border-radius: 3px; margin-right: 10px;">Adicionar Novo Fornecedor</a>
+    </p>
+
+    <p style="text-align: center;">
+        <a href="{% url 'admin:index' %}">Ir para o Admin</a>
+        <!-- Futuramente, adicionaremos um link para "Adicionar Novo Fornecedor" aqui -->
+    </p>
+</body>
+</html>

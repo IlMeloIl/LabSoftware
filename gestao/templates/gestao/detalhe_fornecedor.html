@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ titulo_pagina|default:"Detalhes do Fornecedor" }}</title>
+    <!-- Você pode adicionar links para seus arquivos CSS aqui, se desejar -->
+    
+</head>
+<body>
+    <div> <!-- Um container geral -->
+        <h1>{{ titulo_pagina }}</h1>
+        <hr>
+
+        {% if fornecedor %}
+        <div> <!-- Card ou seção de detalhes -->
+            <div> <!-- Cabeçalho do card/seção -->
+                Informações do Fornecedor
+            </div>
+            <div> <!-- Corpo do card/seção -->
+                <h5>{{ fornecedor.nome_razao_social }}</h5>
+                {% if fornecedor.nome_fantasia %}
+                    <h6>{{ fornecedor.nome_fantasia }}</h6>
+                {% endif %}
+                <hr>
+                <p><strong>CNPJ:</strong> {{ fornecedor.cnpj }}</p>
+                <p><strong>E-mail:</strong> {{ fornecedor.email|default:"Não informado" }}</p>
+                <p><strong>Telefone:</strong> {{ fornecedor.telefone|default:"Não informado" }}</p>
+                <p><strong>Endereço:</strong> {{ fornecedor.endereco|default:"Não informado" }}</p>
+                <p><strong>Cidade:</strong> {{ fornecedor.cidade|default:"Não informada" }}</p>
+                <p><strong>UF:</strong> {{ fornecedor.estado|default:"Não informada" }}</p>
+                <p><strong>CEP:</strong> {{ fornecedor.cep|default:"Não informado" }}</p>
+                <p><strong>Status:</strong> {% if fornecedor.ativo %}Ativo{% else %}Inativo{% endif %}</p>
+                <p><strong>Data de Cadastro:</strong> {{ fornecedor.data_cadastro|date:"d/m/Y H:i" }}</p>
+                <p><strong>Última Atualização:</strong> {{ fornecedor.data_atualizacao|date:"d/m/Y H:i" }}</p>
+            </div>
+            <div> <!-- Rodapé do card/seção -->
+                <a href="{% url 'gestao:listar_fornecedores' %}">Voltar para Lista</a>
+                <a href="{% url 'gestao:editar_fornecedor' fornecedor.id %}">Editar</a>
+                <a href="{% url 'gestao:excluir_fornecedor' fornecedor.id %}">Excluir</a>
+                <!-- Futuros links para Excluir -->
+                
+            </div>
+        </div>
+        {% else %}
+            <div> <!-- Alerta -->
+                Fornecedor não encontrado.
+            </div>
+            <a href="{% url 'gestao:listar_fornecedores' %}">Voltar para Lista</a>
+        {% endif %}
+    </div>
+</body>
+</html>
