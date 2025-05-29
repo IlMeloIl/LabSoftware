@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ titulo_pagina|default:"Relatório de Atividades" }}</title>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ titulo_pagina }}</h1>
+
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        <form method="GET" action="{% url 'gestao:relatorio_atividades' %}">
+            <div>
+                <label for="id_data_inicio">Data Início:</label>
+                <input type="date" name="data_inicio" id="id_data_inicio" value="{{ filtros_aplicados.data_inicio|default:'' }}">
+            </div>
+            <div>
+                <label for="id_data_fim">Data Fim:</label>
+                <input type="date" name="data_fim" id="id_data_fim" value="{{ filtros_aplicados.data_fim|default:'' }}">
+            </div>
+            <div>
+                <label for="id_fornecedor">Fornecedor (busca):</label>
+                <input type="text" name="fornecedor" id="id_fornecedor" placeholder="Nome ou CNPJ do fornecedor" value="{{ filtros_aplicados.fornecedor|default:'' }}">
+            </div>
+            <div>
+                <label for="id_tipo_acao">Tipo de Ação:</label>
+                <select name="tipo_acao" id="id_tipo_acao">
+                    <option value="">Todas</option>
+                    {% for valor, texto in tipos_acao %}
+                    <option value="{{ valor }}" {% if filtros_aplicados.tipo_acao == valor %}selected{% endif %}>{{ texto }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <button type="submit">Filtrar</button>
+                <button type="submit" name="export" value="csv" class="export">Exportar para CSV</button>
+                <a href="{% url 'gestao:relatorio_atividades' %}" style="margin-left: 10px;">Limpar Filtros</a>
+            </div>
+        </form>
+
+        {% if atividades %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Usuário</th>
+                    <th>Ação</th>
+                    <th>Descrição</th>
+                    <th>Detalhes Adicionais</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for atividade in atividades %}
+                <tr>
+                    <td>{{ atividade.timestamp|date:"d/m/Y H:i:s" }}</td>
+                    <td>{{ atividade.usuario.username|default:"Sistema" }}</td>
+                    <td>{{ atividade.get_acao_display }}</td>
+                    <td>{{ atividade.descricao }}</td>
+                    <td>{{ atividade.detalhes_adicionais|default:"" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="no-results">Nenhuma atividade encontrada para os filtros aplicados.</p>
+        {% endif %}
+
+        <div class="nav-links">
+            <a href="{% url 'gestao:listar_fornecedores' %}">Voltar para Lista de Fornecedores</a>
+            {% if user.is_staff %}
+            | <a href="{% url 'admin:index' %}">Admin</a>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

@@ -3,7 +3,10 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages 
 from .models import Fornecedor, Produto, AtividadeSistema
 from .forms import FornecedorForm, ProdutoForm
-from django.contrib.auth.decorators import login_required 
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
+import csv
+from datetime import datetime
 
 def listar_fornecedores(request):
     fornecedores = Fornecedor.objects.all().order_by('nome_razao_social')
@@ -266,3 +269,65 @@ def excluir_produto(request, id):
         'titulo_pagina': f"Confirmar Exclusão de {produto.nome}"
     }
     return render(request, 'gestao/confirmar_exclusao_produto.html', context)
+
+@login_required
+def relatorio_atividades(request):
+    atividades_list = AtividadeSistema.objects.select_related('usuario').all()
+
+    # Capturar filtros do GET request
+    data_inicio_str = request.GET.get('data_inicio')
+    data_fim_str = request.GET.get('data_fim')
+    termo_fornecedor = request.GET.get('fornecedor')
+    tipo_acao = request.GET.get('tipo_acao')
+    export_csv = request.GET.get('export') == 'csv'
+
+    filtros_aplicados = {}
+
+    if data_inicio_str:
+        try:
+            data_inicio = datetime.strptime(data_inicio_str, '%Y-%m-%d').date()
+            atividades_list = atividades_list.filter(timestamp__date__gte=data_inicio)
+            filtros_aplicados['data_inicio'] = data_inicio_str
+        except ValueError:
+            messages.error(request, "Formato de data de início inválido. Use AAAA-MM-DD.")
+
+    if data_fim_str:
+        try:
+            data_fim = datetime.strptime(data_fim_str, '%Y-%m-%d').date()
+            atividades_list = atividades_list.filter(timestamp__date__lte=data_fim)
+            filtros_aplicados['data_fim'] = data_fim_str
+        except ValueError:
+            messages.error(request, "Formato de data de fim inválido. Use AAAA-MM-DD.")
+
+    if termo_fornecedor:
+        atividades_list = atividades_list.filter(descricao__icontains=termo_fornecedor)
+        filtros_aplicados['fornecedor'] = termo_fornecedor
+
+    if tipo_acao:
+        atividades_list = atividades_list.filter(acao=tipo_acao)
+        filtros_aplicados['tipo_acao'] = tipo_acao
+
+    if export_csv:
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="relatorio_atividades.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow(['Timestamp', 'Usuário', 'Ação', 'Descrição', 'Detalhes Adicionais'])
+
+        for atividade in atividades_list:
+            writer.writerow([
+                atividade.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+                atividade.usuario.username if atividade.usuario else 'Sistema',
+                atividade.get_acao_display(),
+                atividade.descricao,
+                atividade.detalhes_adicionais if atividade.detalhes_adicionais else ''
+            ])
+        return response
+
+    context = {
+        'atividades': atividades_list,
+        'tipos_acao': AtividadeSistema.TIPO_ACAO_CHOICES,
+        'filtros_aplicados': filtros_aplicados, # Para preencher o formulário com os filtros atuais
+        'titulo_pagina': 'Relatório de Atividades do Sistema'
+    }
+    return render(request, 'gestao/relatorio_atividades.html', context)
