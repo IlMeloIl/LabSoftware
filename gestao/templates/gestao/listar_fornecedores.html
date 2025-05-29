@@ -5,45 +5,73 @@
     <title>Lista de Fornecedores</title>
 </head>
 <body>
+    <nav style="text-align: right; margin-bottom: 15px;">
+        {% if user.is_authenticated %}
+            Olá, {{ user.username }}! | 
+            <form method="post" action="{% url 'logout' %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" style="background:none; border:none; padding:0; color:blue; text-decoration:underline; cursor:pointer;">
+                    Logout
+                </button>
+            </form>
+        {% else %}
+            <a href="{% url 'login' %}?next={{ request.path }}">Login</a>
+        {% endif %}
+    </nav>
+
     <h1>Lista de Fornecedores</h1>
 
-    {% if fornecedores %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Nome/Razão Social</th>
-                    <th>CNPJ</th>
-                    <th>Email</th>
-                    <th>Telefone</th>
-                    <th>Ativo</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for fornecedor in fornecedores %}
-                    <tr>
-                        <td>{{ fornecedor.nome_razao_social }}</td>
-                        <td>{{ fornecedor.cnpj }}</td>
-                        <td>{{ fornecedor.email|default:"-" }}</td>
-                        <td>{{ fornecedor.telefone|default:"-" }}</td>
-                        <td>{% if fornecedor.ativo %}Sim{% else %}Não{% endif %}</td>
-                        <td>
-                            <a href="{% url 'gestao:detalhe_fornecedor' fornecedor.id %}">Ver</a>
-                            <a href="{% url 'gestao:editar_fornecedor' fornecedor.id %}">Editar</a>
-                            <a href="{% url 'gestao:excluir_fornecedor' fornecedor.id %}">Excluir</a>
-                            <a href="{% url 'gestao:listar_produtos_por_fornecedor' fornecedor.id %}" class="products">Ver Produtos</a>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p style="text-align: center;">Nenhum fornecedor cadastrado.</p>
+    {% if messages %}
+        <ul class="messages">
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
     {% endif %}
 
-    <p style="text-align: center;">
-        <a href="{% url 'gestao:criar_fornecedor' %}">Adicionar Novo Fornecedor</a>
-        <a href="{% url 'gestao:listar_produtos' %}">Ver Todos os Produtos</a>
-        <a href="{% url 'admin:index' %}">Ir para o Admin</a>
-    </p>
+    {% if user.is_authenticated %}
+        {% if fornecedores %}
+        <table>
+            <thead>
+            <tr>
+                <th>Nome/Razão Social</th>
+                <th>CNPJ</th>
+                <th>Email</th>
+                <th>Telefone</th>
+                <th>Ativo</th>
+                <th>Ações</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for fornecedor in fornecedores %}
+            <tr>
+                <td>{{ fornecedor.nome_razao_social }}</td>
+                <td>{{ fornecedor.cnpj }}</td>
+                <td>{{ fornecedor.email|default:"-" }}</td>
+                <td>{{ fornecedor.telefone|default:"-" }}</td>
+                <td>{% if fornecedor.ativo %}Sim{% else %}Não{% endif %}</td>
+                <td>
+                    <a href="{% url 'gestao:detalhe_fornecedor' fornecedor.id %}">Ver</a>
+                    <a href="{% url 'gestao:editar_fornecedor' fornecedor.id %}">Editar</a>
+                    <a href="{% url 'gestao:excluir_fornecedor' fornecedor.id %}">Excluir</a>
+                    <a href="{% url 'gestao:listar_produtos_por_fornecedor' fornecedor.id %}">Ver Produtos</a>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="text-align: center;">Nenhum fornecedor cadastrado.</p>
+        {% endif %}
+
+        <p style="text-align: center; margin-top: 20px;">
+            <a href="{% url 'gestao:criar_fornecedor' %}">Adicionar Novo Fornecedor</a> |
+            <a href="{% url 'gestao:listar_produtos' %}">Ver Todos os Produtos</a> |
+            <a href="{% url 'admin:index' %}">Ir para o Admin</a>
+        </p>
+    {% else %}
+        <p>Você precisa estar logado para ver a lista de fornecedores e adicionar novos.</p>
+        <p><a href="{% url 'login' %}?next={{ request.path }}">Fazer login</a></p>
+    {% endif %}
 </body>
 </html>

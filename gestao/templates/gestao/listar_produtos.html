@@ -5,17 +5,32 @@
     <title>{{ titulo_pagina|default:"Lista de Produtos" }}</title>
 </head>
 <body>
-    <div class="container">
-        <h1>{{ titulo_pagina }}</h1>
-
-        {% if messages %}
-        <ul class="messages">
-            {% for message in messages %}
-            <li class="{{ message.tags }}">{{ message }}</li>
-            {% endfor %}
-        </ul>
+    <nav style="text-align: right; margin-bottom: 15px;">
+        {% if user.is_authenticated %}
+            Olá, {{ user.username }}! | 
+            <form method="post" action="{% url 'logout' %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" style="background:none; border:none; padding:0; color:blue; text-decoration:underline; cursor:pointer;">
+                    Logout
+                </button>
+            </form>
+        {% else %}
+            <a href="{% url 'login' %}?next={{ request.path }}">Login</a>
         {% endif %}
+    </nav>
 
+    <div class="container">
+    <h1>{{ titulo_pagina|default:"Lista de Produtos" }}</h1>
+
+    {% if messages %}
+    <ul class="messages">
+    {% for message in messages %}
+        <li>{{ message }}</li>
+    {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if user.is_authenticated %}
         <p style="text-align: center; margin-bottom: 20px;">
             <a href="{% url 'gestao:criar_produto' %}" class="add-button">Adicionar Novo Produto</a>
         </p>
@@ -23,30 +38,30 @@
         {% if produtos %}
         <table>
             <thead>
-                <tr>
-                    <th>Nome do Produto</th>
-                    <th>Fornecedor</th>
-                    <th>Código/SKU</th>
-                    <th>Preço Venda</th>
-                    <th>Ativo</th>
-                    <th>Ações</th>
-                </tr>
+            <tr>
+                <th>Nome do Produto</th>
+                <th>Fornecedor</th>
+                <th>Código/SKU</th>
+                <th>Preço Venda</th>
+                <th>Ativo</th>
+                <th>Ações</th>
+            </tr>
             </thead>
             <tbody>
-                {% for produto in produtos %}
-                <tr>
-                    <td>{{ produto.nome }}</td>
-                    <td>{{ produto.fornecedor.nome_fantasia|default:produto.fornecedor.nome_razao_social }}</td>
-                    <td>{{ produto.codigo_produto|default:"-" }}</td>
-                    <td>R$ {{ produto.preco_venda|default_if_none:"-" }}</td>
-                    <td>{% if produto.ativo %}Sim{% else %}Não{% endif %}</td>
-                    <td class="actions">
-                        <a href="{% url 'gestao:detalhe_produto' produto.id %}">Ver</a>
-                        <a href="{% url 'gestao:editar_produto' produto.id %}">Editar</a>
-                        <a href="{% url 'gestao:excluir_produto' produto.id %}">Excluir</a>
-                    </td>
-                </tr>
-                {% endfor %}
+            {% for produto in produtos %}
+            <tr>
+                <td>{{ produto.nome }}</td>
+                <td>{{ produto.fornecedor.nome_fantasia|default:produto.fornecedor.nome_razao_social }}</td>
+                <td>{{ produto.codigo_produto|default:"-" }}</td>
+                <td>R$ {{ produto.preco_venda|default_if_none:"-" }}</td>
+                <td>{% if produto.ativo %}Sim{% else %}Não{% endif %}</td>
+                <td class="actions">
+                    <a href="{% url 'gestao:detalhe_produto' produto.id %}">Ver</a>
+                    <a href="{% url 'gestao:editar_produto' produto.id %}">Editar</a>
+                    <a href="{% url 'gestao:excluir_produto' produto.id %}">Excluir</a>
+                </td>
+            </tr>
+            {% endfor %}
             </tbody>
         </table>
         {% else %}
@@ -57,6 +72,10 @@
             <a href="{% url 'gestao:listar_fornecedores' %}">Ver Fornecedores</a> |
             <a href="{% url 'admin:index' %}">Ir para o Admin</a>
         </p>
+    {% else %}
+        <p>Você precisa estar logado para ver a lista de produtos e adicionar novos.</p>
+        <p><a href="{% url 'login' %}?next={{ request.path }}">Fazer login</a></p>
+    {% endif %}
     </div>
 </body>
 </html>

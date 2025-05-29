@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistema de Gestão</title>
+</head>
+<body>
+    <h1>Acessar o Sistema</h1>
+
+    {% if form.errors %}
+        <p style="color: red;">Seu nome de usuário e senha não correspondem. Por favor, tente novamente.</p>
+    {% endif %}
+
+    {% if next %}
+        {% if user.is_authenticated %}
+            <p>Sua conta não tem acesso a esta página. Para prosseguir,
+            por favor, faça login com uma conta que tenha acesso.</p>
+        {% else %}
+            <p>Por favor, faça login para ver esta página.</p>
+        {% endif %}
+    {% endif %}
+
+    <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+        
+        <p>
+            <label for="id_username">Usuário:</label>
+            <input type="text" name="username" autofocus autocapitalize="none" autocomplete="username" maxlength="150" required id="id_username">
+        </p>
+        <p>
+            <label for="id_password">Senha:</label>
+            <input type="password" name="password" autocomplete="current-password" required id="id_password">
+        </p>
+        
+        <input type="hidden" name="next" value="{{ next }}">
+        
+        <p><button type="submit">Login</button></p>
+    </form>
+
+    {# Se você implementar reset de senha, descomente e ajuste o link abaixo #}
+    {# <p><a href="{% url 'password_reset' %}">Esqueceu a senha?</a></p> #}
+    
+    {# Se você implementar registro de usuários, adicione o link aqui #}
+    {# <p><a href="{% url 'gestao:registrar_usuario' %}">Não tem uma conta? Registre-se</a></p> #}
+
+</body>
+</html>
