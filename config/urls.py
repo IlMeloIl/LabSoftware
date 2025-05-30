@@ -16,9 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from gestao import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('contas/', include('django.contrib.auth.urls')),
-    path('', include('gestao.urls')),
+    path('fornecedores/', include('gestao.urls')),
+    path('', views.root_redirect_view, name='root_redirect'),
 ]

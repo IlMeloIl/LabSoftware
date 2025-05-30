@@ -1,5 +1,5 @@
 # gestao/views.py
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404, reverse
 from django.contrib import messages 
 from .models import Fornecedor, Produto, AtividadeSistema
 from .forms import FornecedorForm, ProdutoForm
@@ -7,6 +7,11 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 import csv
 from datetime import datetime
+
+def root_redirect_view(request):
+    if request.user.is_authenticated:
+        return redirect(reverse('gestao:listar_fornecedores'))
+    return redirect(reverse('login'))
 
 def listar_fornecedores(request):
     fornecedores = Fornecedor.objects.all().order_by('nome_razao_social')
@@ -179,14 +184,6 @@ def criar_produto(request):
         form = ProdutoForm(request.POST, instance=produto_pre_instance, fornecedor_fixo=fornecedor_selecionado_obj)
         if form.is_valid():
             produto = form.save(commit=False)
-            # Se o fornecedor foi fixado e o campo estava desabilitado,
-            # o valor pode não vir no form.cleaned_data.
-            # A 'instance' passada ao formulário já deve ter o fornecedor correto.
-            # Se, por algum motivo, a 'instance' não foi suficiente (ex: campo não era parte do modelo inicialmente),
-            # você poderia reatribuir aqui:
-            # if fornecedor_selecionado_obj and not produto.fornecedor:
-            #    produto.fornecedor = fornecedor_selecionado_obj
-            # Mas com a abordagem de passar 'instance=produto_pre_instance', isso deve ser automático.
             produto.save() 
 
             AtividadeSistema.objects.create(
@@ -274,7 +271,6 @@ def excluir_produto(request, id):
 def relatorio_atividades(request):
     atividades_list = AtividadeSistema.objects.select_related('usuario').all()
 
-    # Capturar filtros do GET request
     data_inicio_str = request.GET.get('data_inicio')
     data_fim_str = request.GET.get('data_fim')
     termo_fornecedor = request.GET.get('fornecedor')
@@ -327,7 +323,7 @@ def relatorio_atividades(request):
     context = {
         'atividades': atividades_list,
         'tipos_acao': AtividadeSistema.TIPO_ACAO_CHOICES,
-        'filtros_aplicados': filtros_aplicados, # Para preencher o formulário com os filtros atuais
+        'filtros_aplicados': filtros_aplicados,
         'titulo_pagina': 'Relatório de Atividades do Sistema'
     }
     return render(request, 'gestao/relatorio_atividades.html', context)
