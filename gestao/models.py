@@ -31,6 +31,12 @@ class Fornecedor(models.Model):
                 return f"({self.telefone[:2]}) {self.telefone[2:6]}-{self.telefone[6:]}"
         return self.telefone
 
+    @property
+    def cep_formatado(self):
+        if self.cep and len(self.cep) == 8:
+            return f"{self.cep[:5]}-{self.cep[5:]}"
+        return self.cep
+
     def __str__(self):
         return self.nome_razao_social
 
