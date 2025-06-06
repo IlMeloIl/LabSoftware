@@ -30,9 +30,19 @@ def store_old_fornecedor_status(sender, instance, **kwargs):
             instance._old_ativo = None
 
 @receiver(post_save, sender=Fornecedor)
-def atualizar_status_produtos_do_fornecedor(sender, instance, created, **kwargs):   
+def atualizar_status_produtos_do_fornecedor(sender, instance, created, **kwargs):
     if not created and hasattr(instance, '_old_ativo') and instance._old_ativo is not None:
         if instance._old_ativo and not instance.ativo:
             instance.produtos.filter(ativo=True).update(ativo=False)
+            AtividadeSistema.objects.create(
+                usuario=None,
+                acao='UPDATE',
+                descricao=f"O fornecedor '{instance.nome_razao_social}' (ID: {instance.pk}) foi desativado."
+            )
         elif not instance._old_ativo and instance.ativo:
             instance.produtos.filter(ativo=False).update(ativo=True)
+            AtividadeSistema.objects.create(
+                usuario=None,
+                acao='UPDATE',
+                descricao=f"O fornecedor '{instance.nome_razao_social}' (ID: {instance.pk}) foi reativado."
+            )

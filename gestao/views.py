@@ -68,22 +68,26 @@ def editar_fornecedor(request, id):
     fornecedor = get_object_or_404(Fornecedor, pk=id)
 
     if request.method == 'POST':
-    
         form = FornecedorForm(request.POST, instance=fornecedor)
         if form.is_valid():
+            if not form.has_changed():
+                messages.info(request, "Nenhuma alteração foi feita.")
+                return redirect('gestao:detalhe_fornecedor', id=fornecedor.id)
+
+            changed_fields = form.changed_data
             fornecedor_editado = form.save()
 
-            if form.changed_data:
-                campos_alterados_str = ", ".join(form.changed_data)
-                descricao_log = f"Fornecedor '{fornecedor_editado.nome_razao_social}' (CNPJ: {fornecedor_editado.cnpj}) foi atualizado. Campos alterados: {campos_alterados_str}."
-            else:
-                descricao_log = f"Tentativa de atualização do fornecedor '{fornecedor_editado.nome_razao_social}' (CNPJ: {fornecedor_editado.cnpj}), mas nenhum dado foi alterado."
-
-            AtividadeSistema.objects.create(
-                usuario=request.user,
-                acao='UPDATE',
-                descricao=descricao_log
-            )
+            if changed_fields != ['ativo']:
+                campos_alterados_verbose = [form.fields[field].label or field for field in changed_fields]
+                campos_alterados_str = ", ".join(campos_alterados_verbose)
+                
+                descricao_log = f"Fornecedor '{fornecedor_editado.nome_razao_social}' foi atualizado. Campos alterados: {campos_alterados_str}."
+                
+                AtividadeSistema.objects.create(
+                    usuario=request.user,
+                    acao='UPDATE',
+                    descricao=descricao_log
+                )
 
             messages.success(request, f"Fornecedor '{fornecedor_editado.nome_razao_social}' atualizado com sucesso!")
             return redirect('gestao:detalhe_fornecedor', id=fornecedor_editado.id)
